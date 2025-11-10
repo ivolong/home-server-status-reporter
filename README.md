@@ -1,7 +1,6 @@
 # Home Server Status Reporter
 
 [![CI](https://github.com/ivolong/home-server-status-reporter/actions/workflows/build.yml/badge.svg)](https://github.com/ivolong/home-server-status-reporter/actions/workflows/build.yml)
-[![Super-Linter](https://github.com/ivolong/home-server-status-reporter/actions/workflows/super-linter.yml/badge.svg)](https://github.com/ivolong/home-server-status-reporter/actions/workflows/super-linter.yml)
 
 [![Go](https://img.shields.io/badge/Go-gray?logo=go&logoColor=white&style=flat)](https://go.dev/)
 
