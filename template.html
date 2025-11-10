@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Status - {{ .Config.Site }}</title>
+    <meta name="description" content="System and service health overview for {{ .Config.Site }}" />
+    <meta name="robots" content="noindex">
+    <style>
+        :root {
+            --radius: 12px;
+            --ok: #10b981;
+            --info: #107bb9;
+            --warn: #f59e0b;
+            --crit: #ef4444;
+            --surface: #ffffff;
+            --card: #f8fafc;
+            --text: #0f172a;
+            --muted: #64748b;
+            --shadow: rgba(56, 92, 177, 0.08);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --surface: #181818;
+                --card: #2b2b2b;
+                --text: #f1f5f9;
+                --muted: #979faa;
+                --shadow: rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            padding: 3rem 0 3rem 0;
+            gap: 1.5rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        header small {
+            color: var(--muted);
+            font-size: 0.875rem;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 800px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 12px var(--shadow);
+            padding: 1rem 1.25rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .resource {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .resource-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .progress {
+            position: relative;
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.2);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            border-radius: inherit;
+            background: var(--info);
+            transition: width 0.4s ease;
+        }
+
+        .service {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            background: rgba(148, 163, 184, 0.05);
+        }
+
+        .service-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .service-icon {
+            display: inline-grid;
+            place-items: center;
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+            color: var(--muted);
+        }
+
+        .service-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .service-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .service-desc {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 999px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .ok {
+            background: var(--ok);
+        }
+
+        .info {
+            background: var(--info);
+        }
+
+        .warn {
+            background: var(--warn);
+        }
+
+        .crit {
+            background: var(--crit);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .summary {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            background: rgba(148, 163, 184, 0.05);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+        }
+
+        .summary-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .summary-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Status - {{ .Config.Site }}</h1>
+                <small>System and service health overview</small>
+            </div>
+        </header>
+
+        <div class="cards">
+            <div class="left">
+                <div class="card">
+                    <div class="section-title">Resource Usage</div>
+
+                    {{ range $i, $u := .Stats.CPU }}
+                    <div class="resource">
+                        <div class="resource-label">
+                            <span>Processor</span>
+                            <span>{{ . | FormatPercent }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-fill" style="width: {{ . | FormatPercent }}; background-color: var(--info)"></div>
+                        </div>
+                        <small style="color:var(--muted)">CPU #{{ $i }}</small>
+                    </div>
+                    {{ else }}
+                    {{ end }}
+
+                    <div class="resource">
+                        <div class="resource-label">
+                            <span>Memory</span>
+                            <span>{{ .Stats.MemoryPercent | FormatPercent }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-fill"
+                                style="width: {{ .Stats.MemoryPercent | FormatPercent }}; background-color: var(--info)"></div>
+                        </div>
+                        <small style="color:var(--muted)">
+                            Used: {{ .Stats.MemoryUsed | FormatBytes }} / {{ .Stats.MemoryTotal | FormatBytes }}
+                        </small>
+                    </div>
+
+                    <div class="resource">
+                        <div class="resource-label">
+                            <span>Disk</span>
+                            <span>{{ .Stats.DiskPercent | FormatPercent }}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-fill"
+                                style="width: {{ .Stats.DiskPercent | FormatPercent }}; background-color: var(--info)"></div>
+                        </div>
+                        <small style="color:var(--muted)">
+                            Used: {{ .Stats.DiskUsed | FormatBytes }} / {{ .Stats.DiskTotal | FormatBytes }}
+                        </small>
+                    </div>
+                </div>
+
+                {{ if .Services }}
+                <br>
+                <div class="card">
+                    <div class="section-title">Service Availability</div>
+                    {{ range .Services }}
+                    <div class="service">
+                        <div class="service-info">
+                            <span class="service-icon" aria-hidden="true" title="service icon">{{ .Icon }}</span>
+                            <span class="service-name">{{ .Name }}</span>
+                            <span class="service-desc">{{ .Description }}</span>
+                        </div>
+                        {{ if .Healthy }}
+                        <div class="badge ok">
+                            <span class="dot"></span>Available
+                        </div>
+                        {{ else }}
+                        <div class="badge crit">
+                            <span class="dot"></span>Unavailable
+                        </div>
+                        {{ end }}
+                    </div>
+                    {{ end }}
+                </div>
+                {{ end }}
+            </div>
+
+            <div class="card summary">
+                <div class="summary-item">
+                    <div class="summary-label">Uptime</div>
+                    <div class="summary-value">{{ .Uptime }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Last Updated</div>
+                    <div class="summary-value">{{ .Updated }} ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
