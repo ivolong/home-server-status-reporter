@@ -89,26 +89,25 @@ func collectStats() {
 			log.Printf("Error getting disk info: %v", err)
 		}
 
-		checkHealth := make([]HealthCheck, len(healthchecks))
+		newHealthchecks := healthchecks
 		for i, healthcheck := range healthchecks {
-			healthcheck.Healthy = true
+			newHealthchecks[i].Healthy = true
 
 			response, err := http.Get(healthcheck.Endpoint)
-			defer response.Body.Close()
 			if err != nil {
 				log.Printf("Error checking health: %v", err)
-				healthcheck.Healthy = false
+				newHealthchecks[i].Healthy = false
+				continue
 			}
+			defer response.Body.Close()
 
 			if response.StatusCode != healthcheck.StatusCode {
-				healthcheck.Healthy = false
+				newHealthchecks[i].Healthy = false
 			}
-
-			checkHealth[i] = healthcheck
 		}
 
 		reportMutex.Lock()
-		healthchecks = checkHealth
+		healthchecks = newHealthchecks
 		stats = SystemStats{
 			CPU:           cpuPercent,
 			MemoryUsed:    memInfo.Used,
