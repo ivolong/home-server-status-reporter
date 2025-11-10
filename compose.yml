@@ -1,0 +1,16 @@
+services:
+  build:
+    image: golang:1.25
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: go build .
+
+  run:
+    extends: build
+    command: go run .
+    depends_on:
+      build:
+        condition: service_completed_successfully
+    ports:
+      - 3000:3000
