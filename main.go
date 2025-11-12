@@ -148,7 +148,7 @@ func main() {
 		"FormatPercent": formatPercent,
 		"FormatBytes":   formatBytes,
 	}
-	tmpl, err := template.New("template.html").Funcs(funcs).ParseFiles("template.html")
+	tmpl, err := template.New("template.gohtml").Funcs(funcs).ParseFiles("template.gohtml")
 	if err != nil {
 		log.Fatalf("Error parsing template: %v", err)
 	}
