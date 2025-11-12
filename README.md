@@ -4,8 +4,6 @@
 
 [![Go](https://img.shields.io/badge/Go-gray?logo=go&logoColor=white&style=flat)](https://go.dev/)
 
-## About
-
 Simple, lightweight web application for monitoring system and service health on an Ubuntu server.
 
 ## Usage
