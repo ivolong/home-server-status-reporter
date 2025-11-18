@@ -99,11 +99,12 @@ func collectStats() {
 				newHealthchecks[i].Healthy = false
 				continue
 			}
-			defer response.Body.Close()
 
 			if response.StatusCode != healthcheck.StatusCode {
 				newHealthchecks[i].Healthy = false
 			}
+
+			response.Body.Close()
 		}
 
 		reportMutex.Lock()
